@@ -12,6 +12,8 @@ const createTaskSchema = Joi.object({
     status: Joi.string().valid('pending', 'completed').empty('').optional().messages({
         'any.only': 'Status must be either pending or completed.',
     }),
+    categoryId: Joi.number().integer().allow(null).optional(),
+    tags: Joi.array().items(Joi.number().integer()).optional(),
 });
 
 const updateTaskSchema = Joi.object({
@@ -23,6 +25,8 @@ const updateTaskSchema = Joi.object({
     status: Joi.string().valid('pending', 'completed').empty('').optional().messages({
         'any.only': 'Status must be either pending or completed.',
     }),
+    categoryId: Joi.number().integer().allow(null).optional(),
+    tags: Joi.array().items(Joi.number().integer()).optional(),
 })
     .min(1)
     .messages({

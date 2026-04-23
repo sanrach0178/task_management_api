@@ -3,12 +3,12 @@ require('dotenv').config();
 const app = require('./app');
 const { connectPostgres } = require('./config/db.postgres');
 const { connectMongoDB } = require('./config/db.mongo');
+require('./services/queue.service');
 
 const PORT = process.env.PORT || 3000;
 
 const startServer = async () => {
     try {
-        // Connect to both databases
         await connectPostgres();
         await connectMongoDB();
 

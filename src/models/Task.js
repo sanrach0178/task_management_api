@@ -38,6 +38,19 @@ const taskSchema = new mongoose.Schema(
             required: true,
             index: true,
         },
+        categoryId: {
+            type: Number,
+            default: null,
+            index: true,
+        },
+        tags: [{
+            type: Number,
+            ref: 'Tag',
+        }],
+        reminderJobId: {
+            type: String,
+            default: null,
+        },
     },
     {
         timestamps: true,

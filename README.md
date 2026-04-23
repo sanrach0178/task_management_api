@@ -1,99 +1,116 @@
-<div align="center">
-  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
-  <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
-  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
-  <img src="https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
-  <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=Swagger&logoColor=black" alt="Swagger API Docs" />
-  <img src="https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white" alt="Jest Testing" />
-</div>
+# 🚀 Task Management API — Pro Edition
 
-<h1 align="center">Task Management API</h1>
-<p align="center"><strong>A professional, highly-scalable backend API for managing user tasks natively supporting dual-database architecture.</strong></p>
+A high-performance, enterprise-ready RESTful API designed for modern task orchestration. Built with **Node.js**, **Express**, and **BullMQ**, this system offers real-time reminders, advanced categorization, and seamless third-party service integration via webhooks.
+
+![Task Management Header](https://raw.githubusercontent.com/lucidmotifs/lucid-design-system/main/header.png)
 
 ---
 
 ## ✨ Key Features
-- **Dual-Database Strategy**: Utilizes PostgreSQL (Sequelize) for structured User authentication logic, and MongoDB (Mongoose) for flexible task document tracking.
-- **Robust Security**: Enforces stateless JWT payload validation, secure bcrypt password hashing, and endpoint-level user-task ownership controls.
-- **Performance Optimized**: Implements cursor-based pagination and flexible database-filtering on aggregate endpoints.
-- **Validation**: Strict schema validation using `Joi`.
-- **Testing Standard**: Comprehensive integration testing layer with `Jest` supporting fully mocked databases (`sqlite`, `mongodb-memory-server`).
-- **DevOps Ready**: Seamless one-click deployment using `Docker Compose`.
-- **API Documentation**: Automated, interactive front-end specification via `Swagger UI`.
+
+### 📅 Real-time Task Reminders
+Never miss a deadline. The system utilizes **BullMQ** and **Redis** to schedule micro-notifications exactly 1 hour before a task is due.
+- **Smart Scheduling:** Automatically reschedules if task due dates are updated.
+- **Auto-Cleanup:** Cancels reminders for completed or deleted tasks.
+
+### 🏷️ Categorization & Tags
+Stay organized with dynamic categories and flexible tagging systems.
+- **Filtering:** Powerful GET requests support filtering by `categoryId` and multiple `tags`.
+- **Hierarchical Layout:** Associate tasks with specific work or personal categories.
+
+### 🔗 Webhook Integration
+Automate your workflow by pushing task completion data to external analytics or monitoring services.
+- **Reliability:** Built-in **exponential backoff retry logic** (up to 3 attempts).
+- **Decoupled Architecture:** Webhook processing happens in the background, keeping the API fast and responsive.
+
+### 🛡️ Robust Security & Validation
+- **JWT Authentication:** Secure user-based access control.
+- **Joi Validation:** Strict server-side input sanitization.
+- **Error Handling:** Centralized, standardized error responses for all scenarios.
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technology |
+| :--- | :--- |
+| **Backend** | Node.js (Express.js) |
+| **User Database** | PostgreSQL (Sequelize ORM) |
+| **Task Database** | MongoDB (Mongoose) |
+| **Job Queue** | BullMQ + Redis |
+| **Validation** | Joi |
+| **Documentation** | Swagger / OpenAPI 3.0 |
+
+---
+
+## ⚙️ Quick Start
+
+### 1. Prerequisites
+- Docker & Docker Compose
+- Node.js (v18+)
+- Redis (Optional if running outside Docker)
+
+### 2. Environment Setup
+Create a `.env` file in the root directory:
+```env
+PORT=3000
+NODE_ENV=development
+
+# Authentication
+JWT_SECRET=your_super_secret_key_here
+JWT_EXPIRES_IN=7d
+
+# Databases
+PG_DATABASE=task_management
+PG_USER=postgres
+PG_PASSWORD=postgres
+PG_HOST=localhost
+PG_PORT=5432
+
+MONGO_URI=mongodb://localhost:27017/task_management
+
+# Background Jobs
+REDIS_URL=redis://localhost:6379
+WEBHOOK_URL=https://webhook.site/your-unique-id
+```
+
+### 3. Launch with Docker
+Spin up the entire infrastructure with a single command:
+```bash
+docker-compose up -d
+```
+
+### 4. Install Dependencies & Start
+```bash
+npm install
+npm run dev
+```
+
+---
+
+## 📖 API Documentation
+
+Once the server is running, explore the interactive API documentation at:
+👉 **[http://localhost:3000/api-docs](http://localhost:3000/api-docs)**
+
+The documentation provides detailed request/response schemas and the ability to test endpoints directly from your browser.
 
 ---
 
 ## 🏗️ Architecture
 
 ```mermaid
-graph TD;
-    Client-->|REST| Express[Express Route Definitions];
-    Express-->|Verifies Auth| Middleware[JWT Middleware];
-    Middleware-->|Validates Input| Joi[Joi Schema Validation];
-    Joi-->|Logic| Controllers[Application Controllers];
-    Controllers-->|Read/Write| Postgres[(PostgreSQL)];
-    Controllers-->|Read/Write| Mongo[(MongoDB)];
+graph TD
+    A[Client] -->|JWT| B(Express API)
+    B -->|Sequelize| C[(PostgreSQL: Users)]
+    B -->|Mongoose| D[(MongoDB: Tasks)]
+    B -->|Add Job| E[Redis Queue]
+    E -->|Process| F[BullMQ Workers]
+    F -->|Log| G[Console Reminder]
+    F -->|POST| H[External Webhook]
 ```
 
 ---
 
-## 🚀 Quick Run Guide
-
-### 1. Requirements
-Ensure you have the following installed on your machine:
-- Node.js (v18+)
-- Docker & Docker Compose
-
-### 2. Environment Variables
-Copy over the standard implementation variables:
-```bash
-cp .env.example .env
-```
-
-### 3. Start Database Containers
-Stand up local instances of PostgreSQL and MongoDB mapping to your default ports:
-```bash
-docker-compose up -d
-```
-
-### 4. Running the Development Server
-Install application dependencies and boot up your Express cluster:
-```bash
-npm install
-npm run dev
-```
-
-> **API Server Live**: `http://localhost:3000`
-> **Interactive Swagger Specs**: `http://localhost:3000/api-docs`
-
----
-
-## 🧪 Testing
-The testing suite builds completely separated in-memory variants of our databases securely avoiding bleeding integration logic.
-
-```bash
-npm test
-```
-
----
-
-## 📖 Endpoint Reference
-
-### 🔐 Auth (`/api/auth`)
-| HTTP | Route | Auth Needed | Notes |
-|------|-------|-------------|-------|
-| `POST` | `/register` | ❌ | Provisions an account |
-| `POST` | `/login`    | ❌ | Returns Bearer token |
-| `GET`  | `/profile`  | ✅ | Returns standard identity |
-
-### 📝 Tasks (`/api/tasks`)
-| HTTP | Route | Queries Supported | Description |
-|------|-------|-------------------|-------------|
-| `POST` | `/`      | None | Instantiate new task document |
-| `GET`  | `/`      | `?page=X`, `?limit=Y`, `?status=Z` | Fetches arrays of tasks dynamically |
-| `GET`  | `/:id`   | None | Fetch specific matching task securely |
-| `PATCH`| `/:id`   | None | Update mutable fields |
-| `DELETE`| `/:id`  | None | Soft/Hard deletion of task |
-
-For fully elaborated payloads and responses, hit the local Swagger Endpoint in your browser after spinning up the repository!
+## 📝 License
+This project is licensed under the ISC License.

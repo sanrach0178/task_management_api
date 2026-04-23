@@ -1,16 +1,25 @@
 const Task = require('../models/Task');
+const { scheduleReminder, removeReminder, triggerCompletionWebhook } = require('../services/queue.service');
 
 const createTask = async (req, res, next) => {
     try {
-        const { title, description, dueDate, status } = req.body;
+        const { title, description, dueDate, status, categoryId, tags } = req.body;
 
         const task = await Task.create({
             title,
             description,
             dueDate,
             status,
+            categoryId,
+            tags,
             userId: req.user.id,
         });
+
+        await scheduleReminder(task);
+
+        if (task.status === 'completed') {
+            await triggerCompletionWebhook(task);
+        }
 
         res.status(201).json({
             success: true,
@@ -24,11 +33,18 @@ const createTask = async (req, res, next) => {
 
 const getAllTasks = async (req, res, next) => {
     try {
-        const { status, page = 1, limit = 10 } = req.query;
+        const { status, categoryId, tags, page = 1, limit = 10 } = req.query;
 
         const filter = { userId: req.user.id };
         if (status) {
             filter.status = status;
+        }
+        if (categoryId) {
+            filter.categoryId = parseInt(categoryId, 10);
+        }
+        if (tags) {
+            const tagIds = String(tags).split(',').map(tag => parseInt(tag, 10));
+            filter.tags = { $all: tagIds };
         }
 
         const pageNum = parseInt(page, 10);
@@ -63,14 +79,7 @@ const getTaskById = async (req, res, next) => {
     try {
         const task = await Task.findById(req.params.id);
 
-        if (!task) {
-            return res.status(404).json({
-                success: false,
-                message: 'Task not found.',
-            });
-        }
-
-        if (task.userId !== req.user.id) {
+        if (!task || task.userId !== req.user.id) {
             return res.status(404).json({
                 success: false,
                 message: 'Task not found.',
@@ -90,21 +99,14 @@ const updateTask = async (req, res, next) => {
     try {
         const task = await Task.findById(req.params.id);
 
-        if (!task) {
+        if (!task || task.userId !== req.user.id) {
             return res.status(404).json({
                 success: false,
                 message: 'Task not found.',
             });
         }
 
-        if (task.userId !== req.user.id) {
-            return res.status(404).json({
-                success: false,
-                message: 'Task not found.',
-            });
-        }
-
-        const allowedFields = ['title', 'description', 'dueDate', 'status'];
+        const allowedFields = ['title', 'description', 'dueDate', 'status', 'categoryId', 'tags'];
         allowedFields.forEach((field) => {
             if (req.body[field] !== undefined) {
                 task[field] = req.body[field];
@@ -112,6 +114,13 @@ const updateTask = async (req, res, next) => {
         });
 
         await task.save();
+
+        if (task.status === 'completed') {
+            await triggerCompletionWebhook(task);
+            await removeReminder(task.id);
+        } else {
+            await scheduleReminder(task);
+        }
 
         res.status(200).json({
             success: true,
@@ -127,14 +136,7 @@ const deleteTask = async (req, res, next) => {
     try {
         const task = await Task.findById(req.params.id);
 
-        if (!task) {
-            return res.status(404).json({
-                success: false,
-                message: 'Task not found.',
-            });
-        }
-
-        if (task.userId !== req.user.id) {
+        if (!task || task.userId !== req.user.id) {
             return res.status(404).json({
                 success: false,
                 message: 'Task not found.',

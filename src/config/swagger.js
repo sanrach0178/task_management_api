@@ -6,11 +6,7 @@ const options = {
         info: {
             title: 'Task Management API',
             version: '1.0.0',
-            description:
-                'A RESTful API for managing tasks with JWT authentication, built with Node.js, Express.js, and PostgreSQL.',
-            contact: {
-                name: 'API Support',
-            },
+            description: 'A RESTful API for managing tasks with real-time notifications and external integration.',
         },
         servers: [
             {
@@ -32,7 +28,7 @@ const options = {
                     type: 'object',
                     properties: {
                         id: { type: 'integer', example: 1 },
-                        email: { type: 'string', format: 'email', example: 'user@example.com' },
+                        email: { type: 'string', example: 'user@example.com' },
                         createdAt: { type: 'string', format: 'date-time' },
                         updatedAt: { type: 'string', format: 'date-time' },
                     },
@@ -41,48 +37,54 @@ const options = {
                     type: 'object',
                     properties: {
                         id: { type: 'integer', example: 1 },
-                        title: { type: 'string', example: 'Complete project report' },
-                        description: { type: 'string', example: 'Finish the quarterly report by end of week' },
-                        dueDate: { type: 'string', format: 'date-time', example: '2026-05-01T00:00:00.000Z', nullable: true },
-                        status: { type: 'string', enum: ['pending', 'completed'], example: 'pending' },
-                        userId: { type: 'integer', example: 1 },
+                        title: { type: 'string', example: 'Work on project' },
+                        description: { type: 'string', example: 'Finish the backend API' },
+                        dueDate: { type: 'string', format: 'date-time', nullable: true },
+                        status: { type: 'string', enum: ['pending', 'completed'] },
+                        categoryId: { type: 'integer', nullable: true },
+                        tags: { type: 'array', items: { type: 'integer' } },
+                        userId: { type: 'integer' },
                         createdAt: { type: 'string', format: 'date-time' },
                         updatedAt: { type: 'string', format: 'date-time' },
                     },
                 },
-                RegisterRequest: {
+                Category: {
                     type: 'object',
-                    required: ['email', 'password'],
                     properties: {
-                        email: { type: 'string', format: 'email', example: 'user@example.com' },
-                        password: { type: 'string', minLength: 6, example: 'secret123' },
+                        id: { type: 'integer' },
+                        name: { type: 'string' },
+                        userId: { type: 'integer' },
                     },
                 },
-                LoginRequest: {
+                Tag: {
                     type: 'object',
-                    required: ['email', 'password'],
                     properties: {
-                        email: { type: 'string', format: 'email', example: 'user@example.com' },
-                        password: { type: 'string', example: 'secret123' },
+                        id: { type: 'integer' },
+                        name: { type: 'string' },
+                        userId: { type: 'integer' },
                     },
                 },
                 CreateTaskRequest: {
                     type: 'object',
                     required: ['title'],
                     properties: {
-                        title: { type: 'string', maxLength: 200, example: 'Buy groceries' },
-                        description: { type: 'string', maxLength: 2000, example: 'Milk, eggs, bread' },
-                        dueDate: { type: 'string', format: 'date-time', example: '2026-05-01T00:00:00.000Z' },
-                        status: { type: 'string', enum: ['pending', 'completed'], default: 'pending' },
+                        title: { type: 'string', example: 'New Task' },
+                        description: { type: 'string' },
+                        dueDate: { type: 'string', format: 'date-time' },
+                        status: { type: 'string', enum: ['pending', 'completed'] },
+                        categoryId: { type: 'integer' },
+                        tags: { type: 'array', items: { type: 'integer' } },
                     },
                 },
                 UpdateTaskRequest: {
                     type: 'object',
                     properties: {
-                        title: { type: 'string', maxLength: 200 },
-                        description: { type: 'string', maxLength: 2000 },
+                        title: { type: 'string' },
+                        description: { type: 'string' },
                         dueDate: { type: 'string', format: 'date-time', nullable: true },
                         status: { type: 'string', enum: ['pending', 'completed'] },
+                        categoryId: { type: 'integer', nullable: true },
+                        tags: { type: 'array', items: { type: 'integer' } },
                     },
                 },
                 SuccessResponse: {
@@ -98,16 +100,7 @@ const options = {
                     properties: {
                         success: { type: 'boolean', example: false },
                         message: { type: 'string' },
-                        errors: {
-                            type: 'array',
-                            items: {
-                                type: 'object',
-                                properties: {
-                                    field: { type: 'string' },
-                                    message: { type: 'string' },
-                                },
-                            },
-                        },
+                        errors: { type: 'array', items: { type: 'object' } },
                     },
                 },
             },

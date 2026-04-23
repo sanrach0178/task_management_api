@@ -1,7 +1,3 @@
-/**
- * Joi validation middleware factory.
- * Takes a Joi schema and returns middleware that validates req.body.
- */
 const validate = (schema) => {
     return (req, res, next) => {
         const { error, value } = schema.validate(req.body, {
@@ -22,7 +18,7 @@ const validate = (schema) => {
             });
         }
 
-        req.body = value; // use the sanitised/coerced value
+        req.body = value;
         next();
     };
 };

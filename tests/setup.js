@@ -3,6 +3,24 @@ const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const { sequelize } = require('../src/config/db.postgres');
 
+jest.mock('ioredis', () => {
+    return jest.fn().mockImplementation(() => ({
+        on: jest.fn(),
+        quit: jest.fn(),
+    }));
+});
+
+jest.mock('bullmq', () => ({
+    Queue: jest.fn().mockImplementation(() => ({
+        add: jest.fn(),
+        getJob: jest.fn(),
+        remove: jest.fn(),
+    })),
+    Worker: jest.fn().mockImplementation(() => ({
+        on: jest.fn(),
+    })),
+}));
+
 let mongoServer;
 
 beforeAll(async () => {
