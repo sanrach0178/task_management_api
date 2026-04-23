@@ -2,7 +2,7 @@
 
 A high-performance, enterprise-ready RESTful API designed for modern task orchestration. Built with **Node.js**, **Express**, and **BullMQ**, this system offers real-time reminders, advanced categorization, and seamless third-party service integration via webhooks.
 
-![Task Management Header](https://raw.githubusercontent.com/lucidmotifs/lucid-design-system/main/header.png)
+![Task Management Header](./assets/banner.png)
 
 ---
 
